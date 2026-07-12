@@ -1,0 +1,279 @@
+=========================================================
+DeTLeng Knowledge Base
+=========================================================
+
+This document provides business and platform knowledge about DeTLeng, its services, and its AI Business Intelligence approach.
+
+It supports the DeTLeng AI Business Intelligence platform with company, service, technology, and case study context.
+
+=========================================================
+About DeTLeng
+=========================================================
+
+DeTLeng is an AI and Data Engineering company focused on transforming business data into trusted intelligence, automation, and measurable business value.
+
+The company specializes in building modern data platforms, analytics systems, Business Intelligence solutions, AI assistants, AI agents, and intelligent business systems.
+
+DeTLeng combines Data Engineering, Analytics Engineering, Business Intelligence, and Artificial Intelligence to help organizations make better decisions from trusted data.
+
+=========================================================
+Mission
+=========================================================
+
+DeTLeng's mission is to transform data into business value.
+
+The company helps organizations move from scattered data and manual reporting toward reliable analytics, intelligent automation, and AI-powered decision support.
+
+=========================================================
+Core Expertise
+=========================================================
+
+DeTLeng works across the full AI and data platform lifecycle, including:
+
+- Data Engineering
+- ETL
+- ELT
+- Analytics Engineering
+- Data Warehousing
+- Google BigQuery
+- SQL
+- Business Intelligence
+- Artificial Intelligence
+- AI Agents
+- Model Context Protocol
+- Retrieval-Augmented Generation
+- Intelligent Business Systems
+
+=========================================================
+AI Business Intelligence
+=========================================================
+
+DeTLeng AI Business Intelligence helps users understand trusted business analytics through natural language.
+
+The platform connects business users with curated analytical data so they can ask questions about revenue, customers, orders, products, sellers, payments, reviews, delivery, and other business KPIs.
+
+The AI Business Intelligence experience is designed to make analytics easier to access, easier to understand, and more useful for decision-making.
+
+=========================================================
+Production Architecture
+=========================================================
+
+The DeTLeng AI Business Intelligence platform follows a trusted analytics architecture:
+
+Business User
+
+↓
+
+AI Business Intelligence Assistant
+
+↓
+
+OpenAI
+
+↓
+
+MCP Business Intelligence Server
+
+↓
+
+BigQuery Analytics Layer
+
+↓
+
+Trusted Business Data
+
+This architecture separates business interaction, AI reasoning, tool execution, and trusted analytics data access.
+
+=========================================================
+Analytics Layer
+=========================================================
+
+The Analytics Layer is the trusted source for business KPIs and analytical results.
+
+Business metrics are prepared through data engineering and analytics engineering processes before being exposed to the AI Business Intelligence platform.
+
+The MCP Business Intelligence Server connects the AI layer with approved business analytics capabilities from the Analytics Layer.
+
+This approach helps ensure that business answers are based on modeled, validated, and analytics-ready data.
+
+=========================================================
+Supported Business Topics
+=========================================================
+
+The DeTLeng AI Business Intelligence platform supports business knowledge and analytics across topics such as:
+
+- Revenue
+- Customers
+- Orders
+- Products
+- Sellers
+- Payments
+- Reviews
+- Delivery
+- KPIs
+- Dashboards
+- Business Intelligence
+- Analytics Engineering
+- Data Engineering
+- Case Studies
+
+=========================================================
+AI + Data Engineering Philosophy
+=========================================================
+
+DeTLeng's platform philosophy connects business problems to business value through a structured data and intelligence lifecycle:
+
+Business Problem
+
+↓
+
+Data
+
+↓
+
+Data Engineering
+
+↓
+
+Analytics
+
+↓
+
+Business Intelligence
+
+↓
+
+Artificial Intelligence
+
+↓
+
+Business Decision
+
+↓
+
+Business Value
+
+This philosophy ensures that AI is grounded in trusted data and aligned with real business outcomes.
+
+=========================================================
+Technology Overview
+=========================================================
+
+DeTLeng uses modern cloud, data, and AI technologies to build intelligent business platforms.
+
+Google BigQuery
+
+BigQuery is a cloud data warehouse used for scalable analytics, business reporting, and analytical data modeling.
+
+SQL
+
+SQL is used to transform, model, query, and analyze structured business data.
+
+Python
+
+Python is used for backend services, data workflows, automation, integrations, and AI platform development.
+
+FastAPI
+
+FastAPI is used to build reliable backend APIs for AI and data applications.
+
+OpenAI
+
+OpenAI models provide natural language understanding, reasoning, and explanation capabilities for AI assistants.
+
+FastMCP
+
+FastMCP supports structured tool-based communication between AI systems and trusted business capabilities.
+
+Google Cloud
+
+Google Cloud provides infrastructure for data warehousing, analytics, authentication, deployment, and scalable platform operations.
+
+=========================================================
+Case Study Approach
+=========================================================
+
+DeTLeng case studies demonstrate how business problems can be converted into practical data and AI solutions.
+
+The case study approach follows this path:
+
+Business Problem
+
+↓
+
+Requirements
+
+↓
+
+Architecture
+
+↓
+
+Data Engineering
+
+↓
+
+Analytics Layer
+
+↓
+
+Business Intelligence
+
+↓
+
+AI Assistant
+
+↓
+
+Business Value
+
+This approach makes each solution easier to understand, reproduce, extend, and adapt for real business environments.
+
+=========================================================
+DeTLeng Websites
+=========================================================
+
+DeTLeng maintains several websites for company information, AI solutions, case studies, and insights:
+
+- www.detleng.com
+- agents.detleng.com
+- casestudy.detleng.com
+- insights.detleng.com
+
+=========================================================
+Services
+=========================================================
+
+DeTLeng provides services across AI, data, analytics, and intelligent business systems, including:
+
+- AI Business Intelligence Assistants
+- Data Engineering
+- BigQuery Solutions
+- Analytics Engineering
+- ETL Development
+- ELT Development
+- Business Intelligence
+- AI Consulting
+- MCP Solutions
+- AI Agent Solutions
+- Enterprise Knowledge Systems
+- Intelligent Business Systems
+- Dashboard and KPI Solutions
+- Data Warehouse Design
+- Analytics Layer Development
+
+=========================================================
+Contact
+=========================================================
+
+Website:
+
+www.detleng.com
+
+Email:
+
+info@detleng.com
+
+=========================================================
+End of Knowledge Base
+=========================================================
