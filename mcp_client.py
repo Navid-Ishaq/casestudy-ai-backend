@@ -120,9 +120,9 @@ class MCPClient:
             self.server_url,
         )
 
-        raw_tools = await asyncio.wait_for(
-            self._list_tools_once(),
-            timeout=self.timeout_seconds,
+        raw_tools = await self._run_with_retries(
+            operation=self._list_tools_once,
+            operation_name="list_tools",
         )
 
         tool_names = self._extract_tool_names(raw_tools)
@@ -142,7 +142,7 @@ class MCPClient:
         arguments: dict | None = None
     ):
 
-        await self._validate_tool_name(tool_name)
+        self._validate_tool_name(tool_name)
 
         if arguments is None:
             arguments = {}
@@ -230,7 +230,7 @@ class MCPClient:
                 )
 
             if attempt < self.max_retries:
-                retry_delay = self.retry_delay_seconds * attempt
+                retry_delay = self._retry_delay(attempt, last_error)
 
                 logger.info(
                     "Retrying MCP tool after delay: tool=%s delay_seconds=%s next_attempt=%s/%s",
@@ -255,6 +255,45 @@ class MCPClient:
             f"MCP tool '{tool_name}' failed after {self.max_retries} attempts. "
             f"Last error: {type(last_error).__name__}: {last_error}"
         ) from last_error
+
+    async def _run_with_retries(self, operation, operation_name: str):
+        last_error = None
+
+        for attempt in range(1, self.max_retries + 1):
+            try:
+                return await asyncio.wait_for(
+                    operation(),
+                    timeout=self.timeout_seconds,
+                )
+            except Exception as exc:
+                last_error = exc
+                logger.exception(
+                    "MCP operation failed: operation=%s attempt=%s/%s error_type=%s error=%s",
+                    operation_name,
+                    attempt,
+                    self.max_retries,
+                    type(exc).__name__,
+                    exc,
+                )
+
+            if attempt < self.max_retries:
+                await asyncio.sleep(self._retry_delay(attempt, last_error))
+
+        raise MCPToolExecutionError(
+            f"MCP operation '{operation_name}' failed after "
+            f"{self.max_retries} attempts."
+        ) from last_error
+
+    def _retry_delay(self, attempt: int, error: Exception | None) -> float:
+        delay = self.retry_delay_seconds * (2 ** (attempt - 1))
+        error_text = str(error).lower() if error else ""
+
+        # Render/FastMCP may briefly rate-limit session creation while a free
+        # instance is waking. Give 429 responses more room before reconnecting.
+        if "429" in error_text or "too many requests" in error_text:
+            delay = max(delay, 2.5 * attempt)
+
+        return delay
 
     async def _list_tools_once(self):
 
@@ -298,19 +337,16 @@ class MCPClient:
 
             return result
 
-    async def _validate_tool_name(self, tool_name: str):
+    def _validate_tool_name(self, tool_name: str):
 
         if not isinstance(tool_name, str) or not tool_name.strip():
             raise MCPToolValidationError(
                 "MCP tool name must be a non-empty string."
             )
 
-        available_tools = await self.list_tools()
-
-        if tool_name not in available_tools:
-            raise MCPToolValidationError(
-                f"Unsupported MCP tool requested: {tool_name}"
-            )
+        # Business routes are selected from the local deterministic registry.
+        # Avoid a second MCP session solely for remote validation: on a waking
+        # free instance that extra session was the source of intermittent 429s.
 
     def _extract_tool_names(self, tools) -> list[str]:
 

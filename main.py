@@ -320,6 +320,29 @@ def error_response(answer: str):
     }
 
 
+def public_service_error(error: Exception) -> str:
+    """Return a useful public message without exposing internal URLs or traces."""
+
+    error_text = str(error).lower()
+
+    if "429" in error_text or "too many requests" in error_text:
+        return (
+            "The verified analytics service is temporarily busy while it "
+            "starts a session. Please wait a few seconds and try again."
+        )
+
+    if "timeout" in error_text or "timed out" in error_text:
+        return (
+            "The verified analytics service is still waking up. Please wait "
+            "a few seconds and try again."
+        )
+
+    return (
+        "The verified analytics service is temporarily unavailable. "
+        "Please try again shortly."
+    )
+
+
 def success_response(source: str, answer: str):
 
     return {
@@ -381,9 +404,7 @@ def chat(question: Question):
                 e,
             )
 
-            return error_response(
-                str(e)
-            )
+            return error_response(public_service_error(e))
 
     # =====================================
     # DATASET INFORMATION PATH
@@ -420,9 +441,7 @@ def chat(question: Question):
                 e,
             )
 
-            return error_response(
-                str(e)
-            )
+            return error_response(public_service_error(e))
 
     # =====================================
     # BUSINESS KPI PATH
@@ -492,9 +511,7 @@ def chat(question: Question):
                 returned=f"{type(e).__name__}: {str(e)}",
             )
 
-            return error_response(
-                f"MCP error: {type(e).__name__}: {str(e)}"
-            )
+            return error_response(public_service_error(e))
 
         messages = enforce_language_policy(
             build_mcp_explanation_messages(
