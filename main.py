@@ -1,6 +1,8 @@
 import asyncio
 import logging
 import os
+import threading
+import time
 from typing import Dict, List
 
 from dotenv import load_dotenv
@@ -37,6 +39,10 @@ DEBUG_ROUTER = os.getenv(
 client = OpenAI(
     api_key=os.getenv("OPENAI_API_KEY")
 )
+
+WARMUP_TTL_SECONDS = float(os.getenv("WARMUP_TTL_SECONDS", "300"))
+_warmup_lock = threading.Lock()
+_last_warmup_success = 0.0
 
 OPENAI_MODEL = os.getenv(
     "OPENAI_MODEL",
@@ -113,8 +119,29 @@ def home():
 def warmup():
     """Wake both the API and the connected MCP service before a question."""
 
+    global _last_warmup_success
+
+    now = time.monotonic()
+    if now - _last_warmup_success < WARMUP_TTL_SECONDS:
+        return {
+            "status": "ready",
+            "service": "DeTLeng AI Backend",
+            "mcp": "recently verified",
+        }
+
+    # Several website tabs can load together. Only one of them may negotiate
+    # an MCP session; the others return immediately instead of causing a 429
+    # connection storm on the free Render instance.
+    if not _warmup_lock.acquire(blocking=False):
+        return {
+            "status": "warming",
+            "message": "The verified analytics service is already waking up.",
+        }
+
     try:
+        asyncio.run(mcp.wake_server())
         dataset_info = asyncio.run(get_dataset_information(mcp))
+        _last_warmup_success = time.monotonic()
         return {
             "status": "ready",
             "service": "DeTLeng AI Backend",
@@ -130,6 +157,8 @@ def warmup():
             "status": "warming",
             "message": public_service_error(error),
         }
+    finally:
+        _warmup_lock.release()
 
 # ==============================
 # CHAT BUILDER

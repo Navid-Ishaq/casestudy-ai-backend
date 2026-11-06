@@ -4,3 +4,4 @@ openai
 python-dotenv
 pydantic
 fastmcp==3.4.2
+httpx>=0.28.1

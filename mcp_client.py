@@ -23,8 +23,10 @@ import asyncio
 import json
 import logging
 import os
+import threading
 from collections.abc import Mapping, Sequence
 
+import httpx
 from dotenv import load_dotenv
 from fastmcp import Client
 
@@ -51,6 +53,11 @@ MCP_SERVER_URL = os.getenv(
     "MCP_SERVER_URL",
     "https://detleng-bigquery-mcp.onrender.com/mcp"
 ).rstrip("/")
+
+MCP_HEALTH_URL = os.getenv(
+    "MCP_HEALTH_URL",
+    f"{MCP_SERVER_URL.removesuffix('/mcp')}/health"
+)
 
 MCP_TIMEOUT_SECONDS = float(os.getenv(
     "MCP_TIMEOUT_SECONDS",
@@ -109,6 +116,21 @@ class MCPClient:
         self.max_retries = max(1, max_retries)
         self.retry_delay_seconds = max(0, retry_delay_seconds)
         self._tool_cache: set[str] | None = None
+        self._session_lock = threading.Lock()
+
+    async def wake_server(self) -> None:
+        """Wake Render through plain HTTP without opening an MCP session."""
+
+        logger.info("Checking MCP HTTP readiness: url=%s", MCP_HEALTH_URL)
+
+        async with httpx.AsyncClient(
+            timeout=httpx.Timeout(self.timeout_seconds),
+            follow_redirects=True,
+        ) as client:
+            response = await client.get(MCP_HEALTH_URL)
+            response.raise_for_status()
+
+        logger.info("MCP HTTP readiness confirmed.")
 
     async def list_tools(self, refresh: bool = False) -> list[str]:
 
@@ -119,6 +141,8 @@ class MCPClient:
             "Discovering MCP tools from server: url=%s",
             self.server_url,
         )
+
+        await self.wake_server()
 
         raw_tools = await self._run_with_retries(
             operation=self._list_tools_once,
@@ -162,6 +186,10 @@ class MCPClient:
             self.timeout_seconds,
             self.max_retries,
         )
+
+        # A plain readiness request wakes a sleeping Render instance without
+        # consuming a FastMCP session. Only then begin session negotiation.
+        await self.wake_server()
 
         for attempt in range(1, self.max_retries + 1):
 
@@ -291,22 +319,25 @@ class MCPClient:
         # Render/FastMCP may briefly rate-limit session creation while a free
         # instance is waking. Give 429 responses more room before reconnecting.
         if "429" in error_text or "too many requests" in error_text:
-            delay = max(delay, 2.5 * attempt)
+            delay = max(delay, 8.0 * attempt)
 
         return delay
 
     async def _list_tools_once(self):
+        self._session_lock.acquire()
+        try:
+            client = Client(self.server_url)
 
-        client = Client(self.server_url)
+            async with client:
 
-        async with client:
+                logger.info(
+                    "MCP client connected. Listing tools: url=%s",
+                    self.server_url,
+                )
 
-            logger.info(
-                "MCP client connected. Listing tools: url=%s",
-                self.server_url,
-            )
-
-            return await client.list_tools()
+                return await client.list_tools()
+        finally:
+            self._session_lock.release()
 
     async def _call_tool_once(
         self,
@@ -314,28 +345,32 @@ class MCPClient:
         arguments: dict
     ):
 
-        client = Client(self.server_url)
+        self._session_lock.acquire()
+        try:
+            client = Client(self.server_url)
 
-        async with client:
+            async with client:
 
-            logger.info(
-                "MCP client connected. Executing tool: url=%s tool=%s arguments=%r",
-                self.server_url,
-                tool_name,
-                arguments,
-            )
+                logger.info(
+                    "MCP client connected. Executing tool: url=%s tool=%s arguments=%r",
+                    self.server_url,
+                    tool_name,
+                    arguments,
+                )
 
-            result = await client.call_tool(
-                tool_name,
-                arguments
-            )
+                result = await client.call_tool(
+                    tool_name,
+                    arguments
+                )
 
-            logger.info(
-                "MCP tool execution completed: tool=%s",
-                tool_name,
-            )
+                logger.info(
+                    "MCP tool execution completed: tool=%s",
+                    tool_name,
+                )
 
-            return result
+                return result
+        finally:
+            self._session_lock.release()
 
     def _validate_tool_name(self, tool_name: str):
 
