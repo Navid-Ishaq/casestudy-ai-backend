@@ -1094,6 +1094,7 @@ TOOL_ROUTES: tuple[ToolRoute, ...] = (
         "total_sellers",
         "Executive KPIs",
         (
+            "executive seller total",
             "total sellers",
         ),
     ),
@@ -1101,6 +1102,7 @@ TOOL_ROUTES: tuple[ToolRoute, ...] = (
         "total_products",
         "Executive KPIs",
         (
+            "executive product total",
             "total products",
         ),
     ),

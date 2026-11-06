@@ -54,7 +54,7 @@ MCP_SERVER_URL = os.getenv(
 
 MCP_TIMEOUT_SECONDS = float(os.getenv(
     "MCP_TIMEOUT_SECONDS",
-    "30"
+    "90"
 ))
 
 MCP_MAX_RETRIES = int(os.getenv(

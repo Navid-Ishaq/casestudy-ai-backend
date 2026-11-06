@@ -108,6 +108,29 @@ def home():
 
     }
 
+
+@app.get("/warmup")
+def warmup():
+    """Wake both the API and the connected MCP service before a question."""
+
+    try:
+        dataset_info = asyncio.run(get_dataset_information(mcp))
+        return {
+            "status": "ready",
+            "service": "DeTLeng AI Backend",
+            "mcp": dataset_info.get("server", "running"),
+        }
+    except Exception as error:
+        logger.warning(
+            "Background analytics warmup did not complete: %s: %s",
+            type(error).__name__,
+            error,
+        )
+        return {
+            "status": "warming",
+            "message": public_service_error(error),
+        }
+
 # ==============================
 # CHAT BUILDER
 # ==============================
